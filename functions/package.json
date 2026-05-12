@@ -1,0 +1,12 @@
+{
+  "name": "culturelens-functions",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "engines": { "node": "20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.55.0",
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.0.0"
+  }
+}
