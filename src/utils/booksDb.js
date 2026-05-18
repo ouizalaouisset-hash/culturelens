@@ -1,6 +1,17 @@
 // Central book registry — ASINs, Open Library covers, Amazon affiliate links.
-// Replace "culturelens-20" with your real Amazon Associates tag.
 const TAG = "culturelens-20";
+
+// Safely appends ?tag= (or &tag=) to any Amazon URL that is missing it.
+export function ensureAffiliateTag(url) {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    if (!u.searchParams.has("tag")) u.searchParams.set("tag", TAG);
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
 
 const RAW = [
   { title: "Atomic Habits",                              author: "James Clear",                         asin: "0735211299" },
@@ -31,7 +42,7 @@ export const BOOKS_DB = Object.fromEntries(
     {
       ...b,
       image: `https://covers.openlibrary.org/b/isbn/${b.asin}-L.jpg`,
-      link: `https://www.amazon.com/dp/${b.asin}/?tag=${TAG}`,
+      link: ensureAffiliateTag(`https://www.amazon.com/dp/${b.asin}/`),
     },
   ])
 );
@@ -43,7 +54,7 @@ export function enrichBook(book) {
     return {
       ...book,
       image: null,
-      link: `https://www.amazon.com/s?k=${encodeURIComponent(book.title)}&tag=${TAG}`,
+      link: ensureAffiliateTag(`https://www.amazon.com/s?k=${encodeURIComponent(book.title)}`),
     };
   }
   return { ...book, ...entry };

@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { getPersonalizedRecommendations } from "../utils/recommendations";
 
-function BookCard({ book, isMain }) {
+function BookCard({ book, isMain, dimension }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
   return (
     <a
       href={book.link}
@@ -8,42 +11,53 @@ function BookCard({ book, isMain }) {
       rel="noopener noreferrer"
       style={{
         display: "flex",
-        gap: 16,
-        padding: isMain ? "18px 20px" : "14px 18px",
+        flexDirection: "column",
+        padding: isMain ? "20px" : "16px",
         background: isMain ? "var(--accent-bg)" : "var(--code-bg, rgba(255,255,255,0.03))",
         border: `1px solid ${isMain ? "var(--accent-border)" : "var(--border)"}`,
-        borderRadius: 12,
+        borderRadius: 14,
         textDecoration: "none",
-        transition: "opacity 0.15s",
+        transition: "transform 0.18s ease, box-shadow 0.18s ease",
       }}
-      onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
-      onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = "translateY(-3px)";
+        e.currentTarget.style.boxShadow = "0 12px 32px rgba(124,58,237,0.2)";
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "none";
+      }}
     >
-      {/* Cover */}
-      <div style={{
-        width: isMain ? 56 : 44,
-        height: isMain ? 76 : 60,
-        borderRadius: 6,
-        overflow: "hidden",
-        flexShrink: 0,
-        background: "var(--accent-bg)",
-        border: "1px solid var(--accent-border)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: isMain ? 24 : 20,
-      }}>
-        {book.image ? (
-          <img
-            src={book.image}
-            alt={book.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            onError={e => { e.target.style.display = "none"; }}
-          />
-        ) : "📖"}
+      {/* Book cover — centered above title */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+        <div style={{
+          width: isMain ? 88 : 72,
+          height: isMain ? 120 : 98,
+          borderRadius: 8,
+          overflow: "hidden",
+          background: "var(--accent-bg)",
+          border: "1px solid var(--accent-border)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: isMain ? 40 : 32,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+          flexShrink: 0,
+        }}>
+          {book.image && !imgFailed ? (
+            <img
+              src={book.image}
+              alt={book.title}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <span>📖</span>
+          )}
+        </div>
       </div>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         {isMain && (
           <div style={{
             fontSize: 10,
@@ -51,23 +65,74 @@ function BookCard({ book, isMain }) {
             textTransform: "uppercase",
             letterSpacing: "0.1em",
             color: "var(--accent)",
-            marginBottom: 4,
+            marginBottom: 6,
+            textAlign: "center",
           }}>
-            Top pick
+            ✦ Top pick
           </div>
         )}
-        <div style={{ fontWeight: 700, fontSize: isMain ? 15 : 14, color: "var(--text-h)", marginBottom: 2 }}>
+
+        <div style={{
+          fontWeight: 700,
+          fontSize: isMain ? 15 : 14,
+          color: "var(--text-h)",
+          marginBottom: 2,
+          textAlign: "center",
+        }}>
           {book.title}
         </div>
-        <div style={{ fontSize: 12, color: "var(--accent)", fontWeight: 600, marginBottom: 6 }}>
+
+        <div style={{
+          fontSize: 12,
+          color: "var(--accent)",
+          fontWeight: 600,
+          marginBottom: 10,
+          textAlign: "center",
+        }}>
           {book.author}
         </div>
-        <p style={{ fontSize: 13, color: "var(--text)", margin: "0 0 8px", lineHeight: 1.55 }}>
+
+        {dimension && (
+          <div style={{
+            fontSize: 12,
+            color: "var(--text)",
+            fontStyle: "italic",
+            marginBottom: 12,
+            padding: "5px 10px",
+            background: "rgba(124,58,237,0.08)",
+            borderRadius: 8,
+            borderLeft: "3px solid var(--accent)",
+            lineHeight: 1.5,
+          }}>
+            Recommended to improve your{" "}
+            <strong style={{ fontStyle: "normal" }}>{dimension}</strong>
+          </div>
+        )}
+
+        <p style={{
+          fontSize: 13,
+          color: "var(--text)",
+          margin: "0 0 16px",
+          lineHeight: 1.6,
+          flex: 1,
+        }}>
           {book.reason}
         </p>
-        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>
-          Get the book →
-        </span>
+
+        {/* CTA */}
+        <div style={{
+          padding: "11px 16px",
+          background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+          color: "#fff",
+          borderRadius: 10,
+          fontSize: 13,
+          fontWeight: 700,
+          textAlign: "center",
+          letterSpacing: "0.02em",
+          boxShadow: "0 4px 14px rgba(124,58,237,0.35)",
+        }}>
+          Improve this → Get the book
+        </div>
       </div>
     </a>
   );
@@ -143,7 +208,12 @@ function TraitRecommendation({ rec }) {
           Recommended reading
         </div>
         {rec.books.map((book, i) => (
-          <BookCard key={i} book={book} isMain={book.priority === "main"} />
+          <BookCard
+            key={i}
+            book={book}
+            isMain={book.priority === "main"}
+            dimension={rec.label}
+          />
         ))}
       </div>
     </div>
@@ -188,10 +258,9 @@ export default function BookRecommendations({ pcts }) {
         textAlign: "center",
         margin: "4px 0 0",
         opacity: 0.5,
-        lineHeight: 1.5,
+        lineHeight: 1.6,
       }}>
-        Recommendations based on your behavioral profile.
-        <br />Book links are Amazon affiliate links — same price for you.
+        As an Amazon Associate, I earn from qualifying purchases.
       </p>
     </div>
   );
